@@ -1,0 +1,26 @@
+# https://docs.spring.io/spring-boot/appendix/application-properties/index.html#appendix.application-properties.server
+
+spring:
+  profiles:
+    active: myapp
+
+  application:
+    name: myapp
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USER}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+
+  jpa:
+    open-in-view: false
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: validate
+
+app:
+  secret: ${APP_SECRET}
+  expiration: 86400000
+
+server:
+  port: 4000

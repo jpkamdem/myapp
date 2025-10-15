@@ -1,0 +1,233 @@
+=== Présentation
+
+// Description (serveur auth stateless basique, stack)
+Ceci est ma première tentative concrète de création d'un backend en utilisant Java Spring Boot, proposant :
+
+* CRUD
+* authentification (Stateless)
+* conteneurisation
+
+==== Stack
+
+* Java (21.06.6, 2025-01-21 LTS)
+* Spring Boot (3.5.6, 2025-09-18)
+* PostgreSQL (18)
+* PgAdmin4 (9.8.0)
+* Podman (4.9.3)
+* Postman (11.52.4, 2025-07-03)
+
+Bien que j'ai utilisé Podman lors de la conception, Docker est totalement utilisable. Utilisez la plateforme de conteneurisation qui vous plaît
+
+=== Comment démarrer le projet
+
+[,sh]
+----
+git clone https://github.com/jpkamdem/spring-server.git
+cd spring-server/
+----
+
+Veuillez créer les fichiers suivant, à la racine du projet :
+
+* .env
+
+[,env]
+----
+APP_NAME=myapp
+----
+
+* .env.db
+
+[,env]
+----
+APP_NAME=myapp
+DB_HOST=db
+DB_PORT=5432
+POSTGRES_DB=myapp_db
+POSTGRES_USER=myuser
+POSTGRES_PASSWORD=db_secret
+DATABASE_URL=postgresql://myuser:db_secret@db:5432/myapp_db
+----
+
+* .env.server
+
+[,env]
+----
+APP_SECRET=your_secret
+SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/myapp_db
+SPRING_DATASOURCE_USER=myuser
+SPRING_DATASOURCE_PASSWORD=db_secret
+----
+
+* .env.pgadmin
+
+[,env]
+----
+PGADMIN_DEFAULT_EMAIL=dumbemail@proton.me
+PGADMIN_DEFAULT_PASSWORD=my
+----
+
+Veuillez générer un certificat auto-signé avec cette commande. Elle vous demandera de renseigner un code de langue (FR, ENG...), un pays, une région et une ville. Ensuite, placez `nginx-selfsigned.key` et `nginx-selfsigned.crt` à la racine du projet
+
+[,sh]
+----
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout nginx-selfsigned.key -out nginx-selfsigned.crt
+----
+
+==== Lancement
+
+`compose.yaml`
+
+Selon le mode de lancement choisi, veuillez décommenter :
+
+* La ligne `Containerfile.prod` pour le mode production
+* Les lignes `Containerfile.dev`, `volumes`, `ports`, `deploy` et le service `webserver` pour le mode développement
+
+[,yaml]
+----
+  backend:
+    image: ${APP_NAME}/spring:latest
+    build:
+      context: backend
+    # dockerfile: Containerfile.prod
+    #   dockerfile: Containerfile.dev
+    # volumes:
+    #   - .:/app
+    restart: always
+    # ports:
+    #   - name: server
+    #     host_ip: 127.0.0.1
+    #     published: 4000
+    #     target: 4000
+    networks:
+      - app-network
+    env_file:
+      - backend/.env.server
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://127.0.0.1:4000/health"]
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+  # deploy:
+    # replicas: 3
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # webserver:
+  #   image: ${APP_NAME}/nginx:latest
+  #   build:
+  #     context: backend
+  #     dockerfile: Containerfile.nginx
+  #   ports:
+  #     - host_ip: 127.0.0.1
+  #       published: 4000
+  #       target: 443
+  #       app_protocol: https
+  #   networks:
+  #     - app-network
+  #   depends_on:
+  #     backend:
+  #       condition: service_healthy
+----
+
+Docker
+
+[,sh]
+----
+docker compose up --wait --build
+----
+
+Podman
+
+[,sh]
+----
+podman-compose up -d --build
+----
+
+=== Endpoints
+
+*Authentification*
+
+En mode développement, veuillez utiliser des lien `http` et non `https`
+
+===== `POST https://127.0.0.1/4000/api/auth/register`
+
+Cet endpoint attend une requête contenant un corps de la forme suivante :
+
+[,json]
+----
+{
+	"username": "johndoe",
+	"email": "johndoe@gmail.com", 
+	"password": "Johndoe123***",
+	"age": 15,
+	"phoneNumber": "0756314766",
+	"role": "user"
+}
+----
+* `username`, `email` et `phoneNumber` doivent être unique
+
+* `password` doit contenir au minimum : une lettre majuscule, une lettre minuscule, un nombre, un caractères spécial et faire 8 caractères
+
+* `email` doit être valide
+
+* `role` doit être soit `user`, `admin` ou `superadmin`
+
+===== `POST https://127.0.0.1/4000/api/auth/login`
+
+[,json]
+----
+{
+	"identifier": "johndoe",
+	"identifier": "johndoe@gmail.com", 
+	"password": "Johndoe123***"
+}
+----
+
+* `identifier` est indiqué 2 fois car il est possible de s'authentifier via `username` et `email` : choisissez
+
+===== `POST https://127.0.0.1/4000/api/auth/logout`
+
+* Un cookie contenant un Jwt est requis, pas besoin de corps
+
+*CRUD*
+
+⚠️ Ces routes nécessitent d'être authentifié.e, sinon erreur car l'accès aux données n'est pas autorisé à n'importe qui. Chacune de ces routes ne sont accessible qu'à l'utilisateur.ice propriétaire du compte en question, ou aux utilisateur.ices ayant les rôles `admin` ou `superadmin`
+
+===== `GET https://127.0.0.1/4000/api/users/`
+
+[,json]
+----
+[]
+----
+
+* 200 OK, retourne la liste des utilisateur.ices créé.es
+
+===== `GET https://127.0.0.1/4000/api/users/{id}`
+
+[,json]
+----
+{}
+----
+
+* 200 OK, retourne l'utilisateur.ice trouvé.e à partir de l'id
+
+===== `PUT https://127.0.0.1/4000/api/users/{id}`
+
+[,json]
+----
+{}
+----
+
+
+* 200 OK, retourne l'utilisateur.ice après modification
+
+===== `DELETE https://127.0.0.1/4000/api/users/{id}`
+
+[,json]
+----
+
+----
+
+* 200 OK, ne retourne rien
