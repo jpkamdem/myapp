@@ -1,0 +1,16 @@
+<div class="h-full flex items-center justify-center">
+  <form [formGroup]="formGroup" (submit)="$event.preventDefault(); submit()">
+    <div class="form-item">
+      <label> Nom d'utilisateur ou adresse mail</label>
+      <input type="text" id="identifier" formControlName="identifier" />
+    </div>
+    <div class="form-item">
+      <label> Mot de passe</label>
+      <input type="password" id="password" formControlName="password" />
+    </div>
+    <div class="form-btn-container">
+      <a [routerLink]="['/register']">Pas encore inscrit(e) ? Inscrivez-vous</a>
+      <button type="submit">Valider</button>
+    </div>
+  </form>
+</div>

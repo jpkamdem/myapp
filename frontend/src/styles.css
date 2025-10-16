@@ -1,2 +1,58 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
+
+/* navigation */
+.nav-item {
+  @apply flex;
+}
+
+.nav-item a {
+  @apply px-6 py-8 w-full font-semibold text-white;
+}
+
+.nav-item a:hover {
+  @apply bg-indigo-300;
+}
+
+.nav-item a.active {
+  @apply bg-indigo-500;
+}
+
+/* forms */
+form {
+  @apply bg-white drop-shadow-xl rounded-sm p-8 min-w-[600px];
+}
+
+.form-item {
+  @apply flex flex-col;
+}
+
+.form-item label {
+  @apply text-lg;
+}
+
+.form-item input {
+  @apply border-1 border-gray-200 rounded-sm pl-4 py-1 my-4 focus:outline-indigo-400 focus:outline-2;
+}
+
+input::-webkit-outer-spin-button, input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.form-item input[type=number] {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
+.form-btn-container {
+  @apply flex justify-between items-center;
+}
+
+.form-btn-container a {
+  @apply text-sm text-gray-700 underline hover:text-indigo-500;
+}
+
+.form-btn-container button {
+  @apply font-semibold p-2 bg-indigo-300 rounded-sm hover:cursor-pointer hover:bg-indigo-700 hover:text-white;
+}
