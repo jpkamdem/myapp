@@ -25,44 +25,44 @@ services:
       start_period: 30s
       retries: 3
 
-  # db-manager:
-  #   image: dpage/pgadmin4:9.8.0
-  #   restart: always
-  #   ports:
-  #     - name: db-manager
-  #       host_ip: 127.0.0.1
-  #       published: 4444
-  #       target: 80
-  #   networks:
-  #     - app-network
-  #   volumes:
-  #     - db-manager_data:/var/lib/pgadmin
-  #   env_file:
-  #     - ./backend.env.db-manager
-  #   healthcheck:
-  #     test: ["CMD", "wget", "-O", "-", "http://127.0.0.1:80/misc/ping"]
-  #     interval: 10s
-  #     timeout: 10s
-  #     start_period: 30s
-  #     retries: 3
-  #   depends_on:
-  #     db:
-  #       condition: service_healthy
+  db-manager:
+    image: dpage/pgadmin4:9.8.0
+    restart: always
+    ports:
+      - name: db-manager
+        host_ip: 127.0.0.1
+        published: 4444
+        target: 80
+    networks:
+      - app-network
+    volumes:
+      - db-manager_data:/var/lib/pgadmin
+    env_file:
+      - ./backend.env.db-manager
+    healthcheck:
+      test: ["CMD", "wget", "-O", "-", "http://127.0.0.1:80/misc/ping"]
+      interval: 10s
+      timeout: 10s
+      start_period: 30s
+      retries: 3
+    depends_on:
+      db:
+        condition: service_healthy
 
   backend:
     image: ${APP_NAME}/spring:latest
     build:
       context: backend
-      dockerfile: Containerfile.prod
-    #   dockerfile: Containerfile.dev
-    # volumes:
-    #   - .:/app
+      # dockerfile: Containerfile.prod
+      dockerfile: Containerfile.dev
+    volumes:
+      - ./backend:/app
     restart: always
-    # ports:
-    #   - name: server
-    #     host_ip: 127.0.0.1
-    #     published: 4000
-    #     target: 4000
+    ports:
+      - name: server
+        host_ip: 127.0.0.1
+        published: 4000
+        target: 4000
     networks:
       - app-network
     env_file:
@@ -73,8 +73,8 @@ services:
       timeout: 10s
       start_period: 30s
       retries: 3
-    deploy:
-      replicas: 3
+    # deploy:
+    #   replicas: 3
     depends_on:
       db:
         condition: service_healthy
@@ -86,7 +86,7 @@ services:
       dockerfile: Containerfile.prod
       # dockerfile: Containerfile.dev
     # volumes:
-    #   - .:/app
+    #   - ./frontend:/app
     # ports:
     #   - host_ip: 127.0.0.1
     #     published: 8080
@@ -123,6 +123,8 @@ services:
       - app-network
     depends_on:
       backend:
+        condition: service_healthy
+      frontend:
         condition: service_healthy
 
 volumes:

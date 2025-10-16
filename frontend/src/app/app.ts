@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
-import { Navigation } from './shared/navigation-component/navigation';
+import { Navigation } from './shared/navigation/navigation';
 
 @Component({
   selector: 'app-root',
@@ -8,4 +8,5 @@ import { Navigation } from './shared/navigation-component/navigation';
   templateUrl: './app.html',
   styleUrl: './app.css',
 })
-export class App {}
+export class App {
+}

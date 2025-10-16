@@ -32,10 +32,14 @@ export class LoginForm {
     }),
   });
 
-  protected formData = output<FormGroup>();
+  protected readonly formData = output<typeof this.formGroup.controls>();
 
   submit() {
-    this.formData.emit(this.formGroup);
+    this.formData.emit({
+      identifier: this.formGroup.controls.identifier,
+      password: this.formGroup.controls.password,
+    });
+
     this.formGroup.reset();
   }
 }

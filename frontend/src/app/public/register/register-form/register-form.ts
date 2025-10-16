@@ -14,7 +14,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './register-form.css',
 })
 export class RegisterForm {
-  protected formGroup = new FormGroup({
+  protected readonly formGroup = new FormGroup({
     username: new FormControl('', {
       nonNullable: true,
       validators: [
@@ -39,14 +39,9 @@ export class RegisterForm {
       ],
       updateOn: 'change',
     }),
-    age: new FormControl(1, {
+    age: new FormControl('', {
       nonNullable: true,
-      validators: [
-        Validators.required,
-        Validators.pattern('/[^0-9]{1,2}'),
-        Validators.minLength(1),
-        Validators.maxLength(3),
-      ],
+      validators: [Validators.required, Validators.pattern('^[1-9]{1,3}')],
       updateOn: 'change',
     }),
     phoneNumber: new FormControl('', {
@@ -54,18 +49,24 @@ export class RegisterForm {
       validators: [
         Validators.required,
         Validators.pattern('^0[(6|7)][0-9]{8}$'),
-        Validators.minLength(10),
-        Validators.maxLength(10),
       ],
       updateOn: 'change',
     }),
     role: new FormControl('user', { nonNullable: true }),
   });
 
-  protected formData = output<FormGroup>();
+  protected readonly formData = output<typeof this.formGroup.controls>();
 
   protected submit() {
-    this.formData.emit(this.formGroup);
+    this.formData.emit({
+      username: this.formGroup.controls.username,
+      email: this.formGroup.controls.email,
+      password: this.formGroup.controls.password,
+      age: this.formGroup.controls.age,
+      phoneNumber: this.formGroup.controls.phoneNumber,
+      role: this.formGroup.controls.role,
+    });
+
     this.formGroup.reset();
   }
 }
